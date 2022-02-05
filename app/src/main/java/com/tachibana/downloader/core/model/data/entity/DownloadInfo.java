@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018, 2019 Tachibana General Laboratories, LLC
- * Copyright (C) 2018, 2019 Yaroslav Pronin <proninyaroslav@mail.ru>
+ * Copyright (C) 2018-2022 Tachibana General Laboratories, LLC
+ * Copyright (C) 2018-2022 Yaroslav Pronin <proninyaroslav@mail.ru>
  *
  * This file is part of Download Navi.
  *
@@ -111,6 +111,7 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
     public long lastModify;
     /* MD5, SHA-256 */
     public String checksum;
+    public boolean uncompressArchive = false;
 
     public DownloadInfo(@NonNull Uri dirPath,
                         @NonNull String url,
@@ -120,6 +121,32 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
         this.dirPath = dirPath;
         this.url = url;
         this.fileName = fileName;
+    }
+
+    @Ignore
+    public DownloadInfo(@NonNull DownloadInfo other) {
+        id = other.id;
+        dirPath = other.dirPath;
+        url = other.url;
+        fileName = other.fileName;
+        description = other.description;
+        mimeType = other.mimeType;
+        totalBytes = other.totalBytes;
+        statusCode = other.statusCode;
+        unmeteredConnectionsOnly = other.unmeteredConnectionsOnly;
+        numPieces = other.numPieces;
+        retry = other.retry;
+        statusMsg = other.statusMsg;
+        dateAdded = other.dateAdded;
+        visibility = other.visibility;
+        hasMetadata = other.hasMetadata;
+        userAgent = other.userAgent;
+        numFailed = other.numFailed;
+        retryAfter = other.retryAfter;
+        lastModify = other.lastModify;
+        checksum = other.checksum;
+        uncompressArchive = other.uncompressArchive;
+        partialSupport = other.partialSupport;
     }
 
     @Ignore
@@ -145,6 +172,8 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
         retryAfter = source.readInt();
         lastModify = source.readLong();
         checksum = source.readString();
+        uncompressArchive = source.readByte() > 0;
+        partialSupport = source.readByte() > 0;
     }
 
     @Override
@@ -176,10 +205,11 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
         dest.writeInt(retryAfter);
         dest.writeLong(lastModify);
         dest.writeString(checksum);
+        dest.writeByte((byte)(uncompressArchive ? 1 : 0));
+        dest.writeByte((byte)(partialSupport ? 1 : 0));
     }
 
-    public static final Parcelable.Creator<DownloadInfo> CREATOR =
-            new Parcelable.Creator<DownloadInfo>()
+    public static final Parcelable.Creator<DownloadInfo> CREATOR = new Parcelable.Creator<>()
             {
                 @Override
                 public DownloadInfo createFromParcel(Parcel source)
@@ -298,7 +328,8 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
                 numFailed == info.numFailed &&
                 retryAfter == info.retryAfter &&
                 lastModify == info.lastModify &&
-                (checksum == null || checksum.equals(info.checksum));
+                (checksum == null || checksum.equals(info.checksum)) &&
+                uncompressArchive == info.uncompressArchive;
     }
 
     @Override
@@ -326,6 +357,7 @@ public class DownloadInfo implements Parcelable, Comparable<DownloadInfo>
                 ", retryAfter=" + retryAfter +
                 ", lastModify=" + lastModify +
                 ", checksum=" + checksum +
+                ", uncompressArchive=" + uncompressArchive +
                 '}';
     }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2019 Tachibana General Laboratories, LLC
- * Copyright (C) 2019 Yaroslav Pronin <proninyaroslav@mail.ru>
+ * Copyright (C) 2019-2022 Tachibana General Laboratories, LLC
+ * Copyright (C) 2019-2022 Yaroslav Pronin <proninyaroslav@mail.ru>
  *
  * This file is part of Download Navi.
  *
@@ -171,6 +171,9 @@ public class MimeTypeUtils
         mimeToCategory.put("application/x-mpegurl", Category.VIDEO);
         mimeToCategory.put("application/x-quicktimeplayer", Category.VIDEO);
         mimeToCategory.put("application/x-rar-compressed", Category.ARCHIVE);
+        mimeToCategory.put("application/x-rar", Category.ARCHIVE);
+        mimeToCategory.put("application/rar", Category.ARCHIVE);
+        mimeToCategory.put("application/vnd.rar", Category.ARCHIVE);
         mimeToCategory.put("application/x-sbx", Category.ARCHIVE);
         mimeToCategory.put("application/x-sh", Category.DOCUMENT);
         mimeToCategory.put("application/x-shar", Category.ARCHIVE);
@@ -199,20 +202,40 @@ public class MimeTypeUtils
         mimeToCategory.put("application/x-xz", Category.ARCHIVE);
         mimeToCategory.put("application/zip", Category.ARCHIVE);
         mimeToCategory.put("application/x-zoo", Category.ARCHIVE);
+        mimeToCategory.put("application/php", Category.DOCUMENT);
+        mimeToCategory.put("application/x-php", Category.DOCUMENT);
+        mimeToCategory.put("application/x-httpd-php", Category.DOCUMENT);
+        mimeToCategory.put("application/x-httpd-php-source", Category.DOCUMENT);
+    }
+
+    private static final HashMap<String, String> extensionToMime = new HashMap<>();
+    static {
+        extensionToMime.put("php", "application/php");
+    }
+
+    private static final HashMap<String, String> mimeToExtension = new HashMap<>();
+    static {
+        mimeToExtension.put("text/php", "php");
+        mimeToExtension.put("text/x-php", "php");
+        mimeToExtension.put("application/php", "php");
+        mimeToExtension.put("application/x-php", "php");
+        mimeToExtension.put("application/x-httpd-php", "php");
+        mimeToExtension.put("application/x-httpd-php-source", "php");
     }
 
     public static String getExtensionFromMimeType(String mimeType)
     {
-        return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        var extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        return extension == null || "bin".equals(mimeType)
+                ? mimeToExtension.get(mimeType)
+                : extension;
     }
 
     public static String getMimeTypeFromExtension(String extension)
     {
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-    }
-
-    public static String normalizeMimeType(String mimeType)
-    {
-        return Intent.normalizeMimeType(mimeType);
+        var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        return mimeType == null || "application/octet-stream".equals(mimeType)
+                ? extensionToMime.get(extension)
+                : mimeType;
     }
 }
